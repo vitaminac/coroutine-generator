@@ -1,6 +1,7 @@
 # coding=utf-8
 from systemcall import ReadWait, WriteWait, NewTask
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+from scheduler import Scheduler
 
 
 class Socket(object):
@@ -16,11 +17,14 @@ class Socket(object):
         while buffer:
             yield from WriteWait(self.sock)
             len = self.sock.send(buffer)
+            print("sent:", buffer)
             buffer = buffer[len:]
 
     def recv(self, maxbytes):
         yield from ReadWait(self.sock)
-        return self.sock.recv(maxbytes)
+        data = self.sock.recv(maxbytes)
+        print("recv", data)
+        return data
 
     def close(self):
         yield self.sock.close()
@@ -51,4 +55,6 @@ def server(port = 48539):
 
 
 if __name__ == '__main__':
-    server()
+    scheduler = Scheduler()
+    scheduler.create_task(server())
+    scheduler.run_forever()

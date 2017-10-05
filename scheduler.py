@@ -4,7 +4,6 @@ from queue import Queue
 from select import select
 
 from future import Future
-from simple_server import server
 from systemcall import SystemCall
 from task import Task
 
@@ -14,11 +13,11 @@ class Scheduler(object):
         # a queue of tasks that are ready to run
         self.ready = Queue()
         # A dictionary that keeps track of all active tasks (each task has a unique integer task ID)
-        self.task_map = { }
+        self.task_map = {}
         # Holding ares for tasks blocking on I/O.
         # These are dictionaries mapping file descriptors to tasks
-        self.read_waiting = { }
-        self.write_waiting = { }
+        self.read_waiting = {}
+        self.write_waiting = {}
 
     @staticmethod
     def _wait_for(waiting_list, fd, cb, *args, **kwargs):
@@ -80,7 +79,7 @@ class Scheduler(object):
         :return:
         :rtype:
         """
-        self.create_task(self.io_poll()) # Launch I/O polls
+        self.create_task(self.io_poll())  # Launch I/O polls
         while self.task_map:
             task = self.ready.get()
             try:
@@ -97,8 +96,3 @@ class Scheduler(object):
                         result()
                 else:
                     self.schedule(task)
-
-
-scheduler = Scheduler()
-scheduler.create_task(server())
-scheduler.run_forever()
